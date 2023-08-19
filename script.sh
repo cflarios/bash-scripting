@@ -2,13 +2,9 @@
 
 # Ruta de los archivos y del archivo de log
 
-v1_dir="/home/chris/Documentos/Github/bash-scripting/v1"
-v2_dir="/home/chris/Documentos/Github/bash-scripting/v2"
-log_file="/home/chris/Documentos/Github/bash-scripting/update.log"
-
-# v1_dir="./v1"
-# v2_dir="./v2"
-# log_file="./update.log"
+v1_dir="./v1"
+v2_dir="./v2"
+log_file="./update.log"
 
 file_to_update="version1.txt"
 file_to_copy="version2.txt"
