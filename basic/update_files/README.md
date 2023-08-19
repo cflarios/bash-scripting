@@ -1,4 +1,4 @@
-# Actualización de Archivos
+# Update files
 
 This bash script is designed to update a file named `version1.txt` with another file named `version2.txt`. The `version1.txt` file is located in the `v1` folder, while the `version2.txt` file is in the `v2` folder. This script also logs information in a `update.log` file.
 
