@@ -19,5 +19,5 @@ if [ -f "$v1_dir/$file_to_update" ]; then
     printf "$timestamp $(tput setaf 128)INFO$(tput setaf 7): File has been updated successfully \n\n" >> "$log_file"
 
 else
-    echo "ERROR: version1.txt does not exist."
+    echo "ERROR: $file_to_update does not exist."
 fi
