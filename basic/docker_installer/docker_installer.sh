@@ -33,10 +33,32 @@ else
     exit 1
 fi
 
-# Update repositories and install dependencies
+
 printf "📦 Updating repositories and installing dependencies... \n\n"
-sudo $PACKAGE_MANAGER update
-sudo $PACKAGE_MANAGER install -y apt-transport-https ca-certificates curl software-properties-common
+
+# Check if update is needed
+sudo $PACKAGE_MANAGER update > /dev/null 2>&1
+updates=$(sudo $PACKAGE_MANAGER list --upgradable 2>/dev/null | grep -c upgradable)
+
+update(){
+    sudo $PACKAGE_MANAGER update
+    sudo $PACKAGE_MANAGER install -y apt-transport-https ca-certificates curl software-properties-common
+    printf "\n\n✅ Done."
+}
+
+if [ "$PACKAGE_MANAGER" = "apt" ]; then
+    if [ $updates -eq 0 ]; then
+        printf "    ✅ The repositories have already been updated."
+        else
+        update
+    fi
+    elif [ "$PACKAGE_MANAGER" = "dnf" ]; then
+        if [ $updates -eq 0 ]; then
+            printf "    ✅ The repositories have already been updated."
+            else
+            update
+        fi
+fi
 
 # Install Docker : https://github.com/docker/docker-install
 printf "\n\n🐋 Installing Docker...\n\n"
@@ -84,7 +106,7 @@ fi
 printf "🐋 Docker version: " 
 docker --version \n\n
 printf "\n🐋 Docker Compose version: " 
-docker-compose --version \n\n
+docker-compose --version
 
 # Show final message
 if [ "$IS_DOCKER_INSTALLED" = true ] && [ "$IS_DOCKER_COMPOSE_INSTALLED" = true ]; then
