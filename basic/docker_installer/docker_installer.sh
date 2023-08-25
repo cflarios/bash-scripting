@@ -1,5 +1,10 @@
 #!/bin/bash
 
+ROOT_PRIVILEGES='sudo'
+
+# Whale banner
+
+banner(){
 msg=$(cat << "EOF"
                                     ','. '. ; : ,','
                                       '..'.,',..'
@@ -18,8 +23,11 @@ EOF
 printf "\n\e[1;94m$msg\e[0m\n\n"
 
 sleep 1
+}
 
 # OS detection
+
+os_detection(){
 if [ -f /etc/lsb-release ]; then
     # Debian, Ubuntu, Linux Mint
     PACKAGE_MANAGER="apt"
@@ -33,18 +41,23 @@ else
     exit 1
 fi
 
-
 printf "📦 Updating repositories and installing dependencies... \n\n"
+}
 
-# Check if update is needed
-sudo $PACKAGE_MANAGER update > /dev/null 2>&1
-updates=$(sudo $PACKAGE_MANAGER list --upgradable 2>/dev/null | grep -c upgradable)
+# Update repositories
 
 update(){
-    sudo $PACKAGE_MANAGER update
-    sudo $PACKAGE_MANAGER install -y apt-transport-https ca-certificates curl software-properties-common
+    $ROOT_PRIVILEGES $PACKAGE_MANAGER update
+    $ROOT_PRIVILEGES $PACKAGE_MANAGER install -y apt-transport-https ca-certificates curl software-properties-common
     printf "\n\n✅ Done."
 }
+
+# Check if update is needed
+
+check_update(){
+
+$ROOT_PRIVILEGES $PACKAGE_MANAGER update > /dev/null 2>&1
+updates=$($ROOT_PRIVILEGES $PACKAGE_MANAGER list --upgradable 2>/dev/null | grep -c upgradable)
 
 if [ "$PACKAGE_MANAGER" = "apt" ]; then
     if [ $updates -eq 0 ]; then
@@ -59,8 +72,11 @@ if [ "$PACKAGE_MANAGER" = "apt" ]; then
             update
         fi
 fi
+}
 
 # Install Docker : https://github.com/docker/docker-install
+
+install_docker(){
 printf "\n\n🐋 Installing Docker...\n\n"
 
 if command -v docker &>/dev/null; then
@@ -68,21 +84,21 @@ if command -v docker &>/dev/null; then
     printf "    ✅ Docker is already installed. \n\n"
     else
     IS_DOCKER_INSTALLED=false
-    sudo apt update
-    wget https://get.docker.com/ && sudo mv index.html install_docker.sh
-    sudo chmod +x install_docker.sh
-    sudo ./install_docker.sh
+    $ROOT_PRIVILEGES apt update
+    wget https://get.docker.com/ && $ROOT_PRIVILEGES mv index.html install_docker.sh
+    $ROOT_PRIVILEGES chmod +x install_docker.sh
+    $ROOT_PRIVILEGES ./install_docker.sh
     printf "\n\n✅ Done.\n\n"
-    sudo rm install_docker.sh
+    $ROOT_PRIVILEGES rm install_docker.sh
 fi
 
-# Add the current user to the "docker" group to execute Docker commands without sudo
+# Add the current user to the "docker" group to execute Docker commands without $ROOT_PRIVILEGES
 
 if groups $USER | grep &>/dev/null '\bdocker\b'; then
     printf "    ✅ The current user is already in the \"docker\" group.\n\n"
     else
     printf "🐋 Adding the current user to the \"docker\" group..."
-    sudo usermod -aG docker $USER
+    $ROOT_PRIVILEGES usermod -aG docker $USER
     sleep 1
     printf "✅ Done.\n\n"
     printf "⚠️  \e[1;33mWARNING:\e[0m You may need to restart the session or system to apply the changes.\n\n"
@@ -96,13 +112,15 @@ if command -v docker-compose &>/dev/null; then
     else
     IS_DOCKER_COMPOSE_INSTALLED=false
     printf "🐋 Installing Docker Compose... \n\n"
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.28.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    $ROOT_PRIVILEGES curl -L "https://github.com/docker/compose/releases/download/1.28.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    $ROOT_PRIVILEGES chmod +x /usr/local/bin/docker-compose
     sleep 1
     printf "\n\n✅ Done.\n\n"
 fi
+}
 
 # Show Docker and Docker Compose versions
+final_message(){
 printf "🐋 Docker version: " 
 docker --version \n\n
 printf "\n🐋 Docker Compose version: " 
@@ -118,3 +136,10 @@ if [ "$IS_DOCKER_INSTALLED" = true ] && [ "$IS_DOCKER_COMPOSE_INSTALLED" = true 
     else
     printf "\n📢 Docker and Docker Compose have been successfully installed.\n\n"
 fi
+}
+
+banner
+os_detection
+check_update
+install_docker
+final_message
